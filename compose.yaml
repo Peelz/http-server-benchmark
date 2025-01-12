@@ -1,0 +1,5 @@
+services:
+  ping-server:
+    build: ./ping_server
+    ports:
+      - "9000:9000"
