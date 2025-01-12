@@ -3,3 +3,15 @@ services:
     build: ./ping_server
     ports:
       - "9000:9000"
+  hyper-proxy:
+    build:
+      context: ./hyper-proxy
+      target: final
+    ports:
+      - 8001:8001
+  actix-proxy:
+    build:
+      context: ./actix-proxy
+      target: final
+    ports:
+      - 8002:8001
