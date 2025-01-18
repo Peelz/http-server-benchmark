@@ -4,14 +4,21 @@ services:
     ports:
       - "9000:9000"
   hyper-proxy:
+    privileged: true
     build:
       context: ./hyper-proxy
       target: final
     ports:
       - 8001:8001
   actix-proxy:
+    privileged: true
     build:
       context: ./actix-proxy
       target: final
+    environment:
+      LISTEN_ADDR: 0.0.0.0,
+      LISTEN_PORT: 8001,
+      FORWARD_ADDR: ping-server,
+      FORWARD_PORT: 9000,
     ports:
       - 8002:8001

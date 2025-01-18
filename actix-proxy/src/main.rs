@@ -115,9 +115,16 @@ async fn forward_reqwest(
 
 #[derive(clap::Parser, Debug)]
 struct CliArguments {
+    #[clap(long, env)]
     listen_addr: String,
+
+    #[clap(long, env)]
     listen_port: u16,
+
+    #[clap(long, env)]
     forward_addr: String,
+
+    #[clap(long, env)]
     forward_port: u16,
 }
 

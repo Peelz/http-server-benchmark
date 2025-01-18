@@ -1,4 +1,5 @@
 use bytes::Bytes;
+use clap::Parser;
 use http_body_util::{combinators::BoxBody, BodyExt};
 use hyper::client::conn::http1::Builder;
 use hyper::server::conn::http1;
@@ -11,14 +12,33 @@ use tokio::{
     stream,
 };
 
+#[derive(Debug, Clone, clap::Parser)]
+struct CliArguments {
+    #[clap(long, env)]
+    listen_addr: String,
+
+    #[clap(long, env)]
+    listen_port: u16,
+
+    #[clap(long, env)]
+    forward_addr: String,
+
+    #[clap(long, env)]
+    forward_port: u16,
+}
+
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-    let addr = SocketAddr::from(([0, 0, 0, 0], 8001));
+    let args = CliArguments::parse();
+
+    let addr = SocketAddr::from((args.listen_addr, args.listen_port));
     let listener = TcpListener::bind(addr).await?;
 
     println!("Listing on http://{}", addr);
 
     loop {
+        let args = args.clone();
+
         let (stream, _) = listener.accept().await?;
         let io = hyper_util::rt::TokioIo::new(stream);
 
@@ -26,7 +46,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
             if let Err(err) = http1::Builder::new()
                 .preserve_header_case(true)
                 .title_case_headers(true)
-                .serve_connection(io, service_fn(proxy))
+                .serve_connection(io, service_fn(move |req| proxy))
                 .with_upgrades()
                 .await
             {
